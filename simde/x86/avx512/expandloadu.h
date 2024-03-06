@@ -21,12 +21,11 @@
  * SOFTWARE.
  *
  * Copyright:
- *   2023      Michael R. Crusoe <crusoe@debian.org>
  *   2024      Guation <guation@guation.cn>
  */
 
-#if !defined(SIMDE_X86_AVX512_RCP_H)
-#define SIMDE_X86_AVX512_RCP_H
+#if !defined(SIMDE_X86_AVX512_EXPANDLOADU_H)
+#define SIMDE_X86_AVX512_EXPANDLOADU_H
 
 #include "types.h"
 
@@ -34,44 +33,33 @@ HEDLEY_DIAGNOSTIC_PUSH
 SIMDE_DISABLE_UNWANTED_DIAGNOSTICS
 SIMDE_BEGIN_DECLS_
 
-// TODO: "The maximum relative error for this approximation is less than 2^-14."
-// vs 1.5*2^-12 for _mm{,256}_rcp_ps
-
 SIMDE_FUNCTION_ATTRIBUTES
-simde__m512
-simde_mm512_rcp14_ps (simde__m512 a) {
+simde__m512i
+simde_mm512_mask_expandloadu_epi32 (simde__m512i src, simde__mmask16 k, void const* mem_addr) {
   #if defined(SIMDE_X86_AVX512F_NATIVE)
-    return _mm512_rcp14_ps(a);
+    return _mm512_mask_expandloadu_epi32(src, k, mem_addr);
   #else
-    simde__m512_private
-      r_,
-      a_ = simde__m512_to_private(a);
-
+    simde__m512i_private src_ = simde__m512i_to_private(src);
+    const int32_t* mem_addr_ = HEDLEY_STATIC_CAST(const int32_t*, mem_addr);
+    simde__m512i_private r_;
     SIMDE_VECTORIZE
-    for (size_t i = 0 ; i < (sizeof(r_.f32) / sizeof(r_.f32[0])) ; i++) {
-      r_.f32[i] = SIMDE_FLOAT32_C(1.0) / a_.f32[i];
+    for (size_t i = 0 ; i < (sizeof(r_.i32) / sizeof(r_.i32[0])) ; i++) {
+      if (k & (UINT16_C(1) << i)) {
+        r_.i32[i] = *mem_addr_;
+        mem_addr_++;
+      } else {
+        r_.i32[i] = src_.i32[i];
+      }
     }
-
-    return simde__m512_from_private(r_);
+    return simde__m512i_from_private(r_);
   #endif
 }
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
-  #undef _mm512_rcp14_ps
-  #define _mm512_rcp14_ps(a) simde_mm512_rcp14_ps(a)
-#endif
-
-#if defined(SIMDE_X86_AVX512F_NATIVE)
-  #define simde_mm512_maskz_rcp14_ps(k, a) _mm512_maskz_rcp14_ps(k, a)
-#else
-  #define simde_mm512_maskz_rcp14_ps(k, a) simde_mm512_maskz_mov_ps(k, simde_mm512_rcp14_ps(a))
-#endif
-
-#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
-  #undef _mm512_maskz_rcp14_ps
-  #define _mm512_maskz_rcp14_ps(k, a) simde_mm512_maskz_rcp14_ps(k, a)
+  #undef _mm512_mask_expandloadu_epi32
+  #define _mm512_mask_expandloadu_epi32(src, k, mem_addr) simde_mm512_mask_expandloadu_epi32((src), (k), (mem_addr))
 #endif
 
 SIMDE_END_DECLS_
 HEDLEY_DIAGNOSTIC_POP
 
-#endif /* !defined(SIMDE_X86_AVX512_RCP_H) */
+#endif /* !defined(SIMDE_X86_AVX512_EXPANDLOADU_H) */

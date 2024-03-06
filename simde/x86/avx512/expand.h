@@ -23,6 +23,7 @@
  * Copyright:
  *   2021      Andrew Rodriguez <anrodriguez@linkedin.com>
  *   2021      Evan Nemerson <evan@nemerson.com>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_EXPAND_H)
@@ -48,6 +49,7 @@ simde_mm256_mask_expand_epi32(simde__m256i src, simde__mmask8 k, simde__m256i a)
     simde__m256i_private r_;
 
     size_t src_idx = 0;
+    SIMDE_VECTORIZE
     for (size_t i = 0; i < (sizeof(r_.i32) / sizeof(r_.i32[0])) ; i++) {
       if (k & (UINT64_C(1) << i)) {
         r_.i32[i] = a_.i32[src_idx++];
@@ -59,7 +61,7 @@ simde_mm256_mask_expand_epi32(simde__m256i src, simde__mmask8 k, simde__m256i a)
     return simde__m256i_from_private(r_);
   #endif
 }
-#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+#if defined(SIMDE_X86_AVX512VL_ENABLE_NATIVE_ALIASES)
   #undef _mm256_mask_expand_epi32
   #define _mm256_mask_expand_epi32(src, k, a) simde_mm256_mask_expand_epi32((src), (k), (a))
 #endif
@@ -75,6 +77,7 @@ simde_mm256_maskz_expand_epi32(simde__mmask8 k, simde__m256i a) {
       r_;
 
     size_t src_idx = 0;
+    SIMDE_VECTORIZE
     for (size_t i = 0; i < (sizeof(r_.i32) / sizeof(r_.i32[0])) ; i++) {
       if (k & (UINT64_C(1) << i)) {
         r_.i32[i] = a_.i32[src_idx++];
@@ -86,9 +89,66 @@ simde_mm256_maskz_expand_epi32(simde__mmask8 k, simde__m256i a) {
     return simde__m256i_from_private(r_);
   #endif
 }
-#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+#if defined(SIMDE_X86_AVX512VL_ENABLE_NATIVE_ALIASES)
   #undef _mm256_maskz_expand_epi32
   #define _mm256_maskz_expand_epi32(k, a) simde_mm256_maskz_expand_epi32((k), (a))
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde__m512i
+simde_mm512_mask_expand_epi32(simde__m512i src, simde__mmask16 k, simde__m512i a) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_mask_expand_epi32(src, k, a);
+  #else
+    simde__m512i_private
+      a_ = simde__m512i_to_private(a),
+      src_ = simde__m512i_to_private(src);
+    simde__m512i_private r_;
+
+    size_t src_idx = 0;
+    SIMDE_VECTORIZE
+    for (size_t i = 0; i < (sizeof(r_.i32) / sizeof(r_.i32[0])) ; i++) {
+      if (k & (UINT64_C(1) << i)) {
+        r_.i32[i] = a_.i32[src_idx++];
+      } else {
+        r_.i32[i] = src_.i32[i];
+      }
+    }
+
+    return simde__m512i_from_private(r_);
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_mask_expand_epi32
+  #define _mm512_mask_expand_epi32(src, k, a) simde_mm512_mask_expand_epi32((src), (k), (a))
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde__m512i
+simde_mm512_maskz_expand_epi32(simde__mmask16 k, simde__m512i a) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_maskz_expand_epi32(k, a);
+  #else
+    simde__m512i_private
+      a_ = simde__m512i_to_private(a),
+      r_;
+
+    size_t src_idx = 0;
+    SIMDE_VECTORIZE
+    for (size_t i = 0; i < (sizeof(r_.i32) / sizeof(r_.i32[0])) ; i++) {
+      if (k & (UINT64_C(1) << i)) {
+        r_.i32[i] = a_.i32[src_idx++];
+      } else {
+        r_.i32[i] = INT32_C(0);
+      }
+    }
+
+    return simde__m512i_from_private(r_);
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_maskz_expand_epi32
+  #define _mm512_maskz_expand_epi32(k, a) simde_mm512_maskz_expand_epi32((k), (a))
 #endif
 
 SIMDE_END_DECLS_

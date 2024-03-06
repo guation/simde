@@ -22,6 +22,7 @@
  *
  * Copyright:
  *   2020      Evan Nemerson <evan@nemerson.com>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_LOAD_H)
@@ -92,21 +93,52 @@ simde_mm512_load_si512 (void const * mem_addr) {
     return r;
   #endif
 }
-#define simde_mm512_load_epi8(mem_addr) simde_mm512_load_si512(mem_addr)
-#define simde_mm512_load_epi16(mem_addr) simde_mm512_load_si512(mem_addr)
-#define simde_mm512_load_epi32(mem_addr) simde_mm512_load_si512(mem_addr)
-#define simde_mm512_load_epi64(mem_addr) simde_mm512_load_si512(mem_addr)
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #define simde_mm512_stream_load_si512(mem_addr) _mm512_stream_load_si512(mem_addr)
+  // #define simde_mm512_load_epi8(mem_addr) _mm512_load_epi8(mem_addr)
+  // #define simde_mm512_load_epi16(mem_addr) _mm512_load_epi16(mem_addr)
+  #define simde_mm512_load_epi32(mem_addr) _mm512_load_epi32(mem_addr)
+  #define simde_mm512_load_epi64(mem_addr) _mm512_load_epi64(mem_addr)
+#else
+  #define simde_mm512_stream_load_si512(mem_addr) simde_mm512_load_si512(mem_addr)
+  // #define simde_mm512_load_epi8(mem_addr) simde_mm512_load_si512(mem_addr)
+  // #define simde_mm512_load_epi16(mem_addr) simde_mm512_load_si512(mem_addr)
+  #define simde_mm512_load_epi32(mem_addr) simde_mm512_load_si512(mem_addr)
+  #define simde_mm512_load_epi64(mem_addr) simde_mm512_load_si512(mem_addr)
+#endif
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
-  #undef _mm512_load_epi8
-  #undef _mm512_load_epi16
+  #undef _mm512_load_si512
+  #undef _mm512_stream_load_si512
+  // #undef _mm512_load_epi8
+  // #undef _mm512_load_epi16
   #undef _mm512_load_epi32
   #undef _mm512_load_epi64
-  #undef _mm512_load_si512
   #define _mm512_load_si512(a) simde_mm512_load_si512(a)
-  #define _mm512_load_epi8(a) simde_mm512_load_si512(a)
-  #define _mm512_load_epi16(a) simde_mm512_load_si512(a)
-  #define _mm512_load_epi32(a) simde_mm512_load_si512(a)
-  #define _mm512_load_epi64(a) simde_mm512_load_si512(a)
+  #define _mm512_stream_load_si512(a) simde_mm512_stream_load_si512(a)
+  // #define _mm512_load_epi8(a) simde_mm512_load_epi8(a)
+  // #define _mm512_load_epi16(a) simde_mm512_load_epi16(a)
+  #define _mm512_load_epi32(a) simde_mm512_load_epi32(a)
+  #define _mm512_load_epi64(a) simde_mm512_load_epi64(a)
+#endif
+
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #define simde_mm512_maskz_load_epi32(k, mem_addr) _mm512_maskz_load_epi32((k), (mem_addr))
+#else
+  #define simde_mm512_maskz_load_epi32(k, mem_addr) simde_mm512_maskz_mov_epi32((k), simde_mm512_load_epi32(mem_addr))
+#endif
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_maskz_load_epi32
+  #define _mm512_maskz_load_epi32(k, mem_addr) simde_mm512_maskz_load_epi32((k), (mem_addr))
+#endif
+
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #define simde_mm512_maskz_load_epi64(k, mem_addr) _mm512_maskz_load_epi64((k), (mem_addr))
+#else
+  #define simde_mm512_maskz_load_epi64(k, mem_addr) simde_mm512_maskz_mov_epi64((k), simde_mm512_load_epi64(mem_addr))
+#endif
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_maskz_load_epi64
+  #define _mm512_maskz_load_epi64(k, mem_addr) simde_mm512_maskz_load_epi64((k), (mem_addr))
 #endif
 
 SIMDE_END_DECLS_

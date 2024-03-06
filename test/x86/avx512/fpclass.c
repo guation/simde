@@ -22,6 +22,7 @@
  *
  * Copyright:
  *   2023      Michael R. Crusoe <crusoe@debian.org>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #define SIMDE_TEST_X86_AVX512_INSN fpclass
@@ -160,6 +161,61 @@ test_simde_mm512_fpclass_ph_mask (SIMDE_MUNIT_TEST_ARGS) {
 #endif
 }
 
+static int
+test_simde_mm512_fpclass_ps_mask (SIMDE_MUNIT_TEST_ARGS) {
+#if 1
+  simde_float32 sNaNf = simde_uint32_as_float32(0xff800011),
+                denormalf = simde_uint32_as_float32(0x007fffff);
+  simde__m512 a = simde_mm512_set_ps(
+      SIMDE_FLOAT32_C(    15.00), SIMDE_FLOAT32_C(    14.00), SIMDE_FLOAT32_C(    13.00), SIMDE_FLOAT32_C(    12.00),
+      SIMDE_FLOAT32_C(    11.00), SIMDE_FLOAT32_C(    10.00), SIMDE_FLOAT32_C(     9.00), SIMDE_FLOAT32_C(     8.00),
+      SIMDE_MATH_NANF        , SIMDE_FLOAT32_C(0.0),
+      -SIMDE_FLOAT32_C(0.0)  , SIMDE_MATH_INFINITYF,
+      -SIMDE_MATH_INFINITYF  , denormalf,
+      -SIMDE_FLOAT32_C(42.23), sNaNf);
+  simde_assert_equal_mmask8(simde_mm512_fpclass_ps_mask(a, 0x01), 128);
+  simde_assert_equal_mmask8(simde_mm512_fpclass_ps_mask(a, 0x02), 64);
+  simde_assert_equal_mmask8(simde_mm512_fpclass_ps_mask(a, 0x04), 32);
+  simde_assert_equal_mmask8(simde_mm512_fpclass_ps_mask(a, 0x08), 16);
+  simde_assert_equal_mmask8(simde_mm512_fpclass_ps_mask(a, 0x10), 8);
+  simde_assert_equal_mmask8(simde_mm512_fpclass_ps_mask(a, 0x20), 4);
+  simde_assert_equal_mmask8(simde_mm512_fpclass_ps_mask(a, 0x40), 2);
+  simde_assert_equal_mmask8(simde_mm512_fpclass_ps_mask(a, 0x80), 1);
+
+  return 0;
+#else
+  fputc('\n', stdout);
+
+  simde_float32 sNaNf = simde_uint32_as_float32(0xff800011),
+                denormalf = simde_uint32_as_float32(0x007fffff);
+  simde__m512 a = simde_mm512_set_ps(
+      SIMDE_FLOAT16_VALUE(    15.00), SIMDE_FLOAT16_VALUE(    14.00), SIMDE_FLOAT16_VALUE(    13.00), SIMDE_FLOAT16_VALUE(    12.00),
+      SIMDE_FLOAT16_VALUE(    11.00), SIMDE_FLOAT16_VALUE(    10.00), SIMDE_FLOAT16_VALUE(     9.00), SIMDE_FLOAT16_VALUE(     8.00),
+      SIMDE_MATH_NANF        , SIMDE_FLOAT32_C(0.0),
+      -SIMDE_FLOAT32_C(0.0)  , SIMDE_MATH_INFINITYF,
+      -SIMDE_MATH_INFINITYF  , denormalf,
+      -SIMDE_FLOAT32_C(42.23), sNaNf);
+  simde__mmask8 r0 = simde_mm512_fpclass_ps_mask(a, SIMDE_MATH_FP_QNAN);
+  simde__mmask8 r1 = simde_mm512_fpclass_ps_mask(a, SIMDE_MATH_FP_PZERO);
+  simde__mmask8 r2 = simde_mm512_fpclass_ps_mask(a, SIMDE_MATH_FP_NZERO);
+  simde__mmask8 r3 = simde_mm512_fpclass_ps_mask(a, SIMDE_MATH_FP_PINF);
+  simde__mmask8 r4 = simde_mm512_fpclass_ps_mask(a, SIMDE_MATH_FP_NINF);
+  simde__mmask8 r5 = simde_mm512_fpclass_ps_mask(a, SIMDE_MATH_FP_DENORMAL);
+  simde__mmask8 r6 = simde_mm512_fpclass_ps_mask(a, SIMDE_MATH_FP_NEGATIVE);
+  simde__mmask8 r7 = simde_mm512_fpclass_ps_mask(a, SIMDE_MATH_FP_SNAN);
+
+  simde_test_x86_write_f32x8(2, a, SIMDE_TEST_VEC_POS_FIRST);
+  simde_test_x86_write_mmask8(2, r0, SIMDE_TEST_VEC_POS_MIDDLE);
+  simde_test_x86_write_mmask8(2, r1, SIMDE_TEST_VEC_POS_MIDDLE);
+  simde_test_x86_write_mmask8(2, r2, SIMDE_TEST_VEC_POS_MIDDLE);
+  simde_test_x86_write_mmask8(2, r3, SIMDE_TEST_VEC_POS_MIDDLE);
+  simde_test_x86_write_mmask8(2, r4, SIMDE_TEST_VEC_POS_MIDDLE);
+  simde_test_x86_write_mmask8(2, r5, SIMDE_TEST_VEC_POS_MIDDLE);
+  simde_test_x86_write_mmask8(2, r6, SIMDE_TEST_VEC_POS_MIDDLE);
+  simde_test_x86_write_mmask8(2, r7, SIMDE_TEST_VEC_POS_LAST);
+  return 1;
+#endif
+}
 
 static int
 test_simde_mm512_fpclass_pd_mask (SIMDE_MUNIT_TEST_ARGS) {
@@ -216,6 +272,7 @@ test_simde_mm512_fpclass_pd_mask (SIMDE_MUNIT_TEST_ARGS) {
 SIMDE_TEST_FUNC_LIST_BEGIN
   SIMDE_TEST_FUNC_LIST_ENTRY(mm256_fpclass_ps_mask)
   SIMDE_TEST_FUNC_LIST_ENTRY(mm512_fpclass_ph_mask)
+  SIMDE_TEST_FUNC_LIST_ENTRY(mm512_fpclass_ps_mask)
   SIMDE_TEST_FUNC_LIST_ENTRY(mm512_fpclass_pd_mask)
 SIMDE_TEST_FUNC_LIST_END
 

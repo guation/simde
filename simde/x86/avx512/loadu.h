@@ -22,6 +22,7 @@
  *
  * Copyright:
  *   2020      Evan Nemerson <evan@nemerson.com>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_LOADU_H)
@@ -167,6 +168,20 @@ simde_mm256_maskz_loadu_ps (simde__mmask8 k, void const * mem_addr) {
 
 SIMDE_FUNCTION_ATTRIBUTES
 simde__m512i
+simde_mm512_maskz_loadu_epi8 (simde__mmask32 k, void const * mem_addr) {
+  #if defined(SIMDE_X86_AVX512BW_NATIVE)
+    return _mm512_maskz_loadu_epi8(k, HEDLEY_REINTERPRET_CAST(void const*, mem_addr));
+  #else
+    return simde_mm512_maskz_mov_epi8(k, simde_mm512_loadu_epi8(mem_addr));
+  #endif
+}
+#if defined(SIMDE_X86_AVX512BW_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_maskz_loadu_epi8
+  #define _mm512_maskz_loadu_epi8(k, mem_addr) simde_mm512_maskz_loadu_epi8(k, mem_addr)
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde__m512i
 simde_mm512_mask_loadu_epi16 (simde__m512i src, simde__mmask32 k, void const * mem_addr) {
   #if defined(SIMDE_X86_AVX512BW_NATIVE)
     return _mm512_mask_loadu_epi16(src, k, HEDLEY_REINTERPRET_CAST(void const*, mem_addr));
@@ -205,6 +220,20 @@ simde_mm512_mask_loadu_epi32 (simde__m512i src, simde__mmask16 k, void const * m
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
   #undef _mm512_mask_loadu_epi32
   #define _mm512_mask_loadu_epi32(src, k, mem_addr) simde_mm512_mask_loadu_epi32(src, k, mem_addr)
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde__m512i
+simde_mm512_maskz_loadu_epi32 (simde__mmask16 k, void const * mem_addr) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_maskz_loadu_epi32(k, HEDLEY_REINTERPRET_CAST(void const*, mem_addr));
+  #else
+    return simde_mm512_maskz_mov_epi32(k, simde_mm512_loadu_epi32(mem_addr));
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_maskz_loadu_epi32
+  #define _mm512_maskz_loadu_epi32(k, mem_addr) simde_mm512_maskz_loadu_epi32(k, mem_addr)
 #endif
 
 SIMDE_FUNCTION_ATTRIBUTES

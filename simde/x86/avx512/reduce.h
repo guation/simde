@@ -22,6 +22,7 @@
  *
  * Copyright:
  *   2023      Michael R. Crusoe <crusoe@debian.org>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_REDUCE_H)
@@ -32,6 +33,84 @@
 HEDLEY_DIAGNOSTIC_PUSH
 SIMDE_DISABLE_UNWANTED_DIAGNOSTICS
 SIMDE_BEGIN_DECLS_
+
+SIMDE_FUNCTION_ATTRIBUTES
+int32_t
+simde_mm512_reduce_add_epi32 (simde__m512i a) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_reduce_add_epi32(a);
+  #else
+    simde__m512i_private a_ = simde__m512i_to_private(a);
+    int32_t r_ = 0;
+    SIMDE_VECTORIZE_REDUCTION(+:r_)
+    for (size_t i = 0 ; i < (sizeof(a_.i32) / sizeof(a_.i32[0])) ; i++) {
+      r_ += a_.i32[i];
+    }
+    return r_;
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #define _mm512_reduce_add_epi32(a) simde_mm512_reduce_add_epi32((a))
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+int32_t
+simde_mm512_mask_reduce_add_epi32 (simde__mmask16 k, simde__m512i a) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_mask_reduce_add_epi32(k, a);
+  #else
+    simde__m512i_private a_ = simde__m512i_to_private(a);
+    int32_t r_ = 0;
+    SIMDE_VECTORIZE_REDUCTION(+:r_)
+    for (size_t i = 0 ; i < (sizeof(a_.i32) / sizeof(a_.i32[0])) ; i++) {
+      if (k & UINT16_C(1) << i)
+        r_ += a_.i32[i];
+    }
+    return r_;
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #define _mm512_mask_reduce_add_epi32(k, a) simde_mm512_mask_reduce_add_epi32((k), (a))
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde_float32
+simde_mm512_reduce_add_ps (simde__m512 a) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_reduce_add_ps(a);
+  #else
+    simde__m512_private a_ = simde__m512_to_private(a);
+    simde_float32 r_ = 0;
+    SIMDE_VECTORIZE_REDUCTION(+:r_)
+    for (size_t i = 0 ; i < (sizeof(a_.f32) / sizeof(a_.f32[0])) ; i++) {
+      r_ += a_.f32[i];
+    }
+    return r_;
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #define _mm512_reduce_add_ps(a) simde_mm512_reduce_add_ps((a))
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde_float32
+simde_mm512_mask_reduce_add_ps (simde__mmask16 k, simde__m512 a) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_mask_reduce_add_ps(k, a);
+  #else
+    simde__m512_private a_ = simde__m512_to_private(a);
+    simde_float32 r_ = 0;
+    SIMDE_VECTORIZE_REDUCTION(+:r_)
+    for (size_t i = 0 ; i < (sizeof(a_.f32) / sizeof(a_.f32[0])) ; i++) {
+      if (k & UINT16_C(1) << i)
+        r_ += a_.f32[i];
+    }
+    return r_;
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #define _mm512_mask_reduce_add_ps(k, a) simde_mm512_mask_reduce_add_ps((k), (a))
+#endif
 
 #if defined(__clang__) && SIMDE_FLOAT16_API == SIMDE_FLOAT16_API_FP16
 SIMDE_DIAGNOSTIC_DISABLE_DOUBLE_PROMOTION_
@@ -347,6 +426,25 @@ simde_mm512_reduce_min_ps(simde__m512 a) {
 }
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
 #  define _mm512_reduce_min_ps(a) simde_mm512_reduce_min_ps((a))
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+int32_t
+simde_mm512_reduce_or_epi32 (simde__m512i a) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_reduce_or_epi32(a);
+  #else
+    simde__m512i_private a_ = simde__m512i_to_private(a);
+    int32_t r_ = 0;
+    SIMDE_VECTORIZE_REDUCTION(|:r_)
+    for (size_t i = 0 ; i < (sizeof(a_.i32) / sizeof(a_.i32[0])) ; i++) {
+      r_ |= a_.i32[i];
+    }
+    return r_;
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #define _mm512_reduce_or_epi32(a) simde_mm512_reduce_or_epi32((a))
 #endif
 
 SIMDE_END_DECLS_

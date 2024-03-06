@@ -24,6 +24,7 @@
  *   2020      Evan Nemerson <evan@nemerson.com>
  *   2020      Hidayat Khan <huk2209@gmail.com>
  *   2020      Christopher Moore <moore@free.fr>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_BROADCAST_H)
@@ -539,6 +540,55 @@ simde_mm512_maskz_broadcast_i32x4(simde__mmask16 k, simde__m128i a) {
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
   #undef _mm512_maskz_broadcast_i32x4
   #define _mm512_maskz_broadcast_i32x4(k, a) simde_mm512_maskz_broadcast_i32x4(k, a)
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde__m512i
+simde_mm512_broadcast_i32x8 (simde__m256i a) {
+  #if defined(SIMDE_X86_AVX512DQ_NATIVE)
+    return _mm512_broadcast_i32x8(a);
+  #else
+    simde__m512i_private r_;
+
+    SIMDE_VECTORIZE
+    for (size_t i = 0 ; i < (sizeof(r_.m256i) / sizeof(r_.m256i[0])) ; i++) {
+      r_.m256i[i] = a;
+    }
+
+    return simde__m512i_from_private(r_);
+  #endif
+}
+#if defined(SIMDE_X86_AVX512DQ_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_broadcast_i32x8
+  #define _mm512_broadcast_i32x8(a) simde_mm512_broadcast_i32x8(a)
+#endif
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde__m512i
+simde_mm512_broadcast_i64x2 (simde__m128i a) {
+  #if defined(SIMDE_X86_AVX512DQ_NATIVE)
+    return _mm512_broadcast_i64x2(a);
+  #else
+    simde__m512i_private r_;
+
+    #if defined(SIMDE_X86_AVX2_NATIVE)
+      SIMDE_VECTORIZE
+      for (size_t i = 0 ; i < (sizeof(r_.m256i) / sizeof(r_.m256i[0])) ; i++) {
+        r_.m256i[i] = simde_mm256_broadcastsi128_si256(a);
+      }
+    #else
+      SIMDE_VECTORIZE
+      for (size_t i = 0 ; i < (sizeof(r_.m128i) / sizeof(r_.m128i[0])) ; i++) {
+        r_.m128i[i] = a;
+      }
+    #endif
+
+    return simde__m512i_from_private(r_);
+  #endif
+}
+#if defined(SIMDE_X86_AVX512DQ_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_broadcast_i64x2
+  #define _mm512_broadcast_i64x2(a) simde_mm512_broadcast_i64x2(a)
 #endif
 
 SIMDE_FUNCTION_ATTRIBUTES

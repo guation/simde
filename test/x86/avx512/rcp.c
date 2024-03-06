@@ -23,6 +23,7 @@
  * Copyright:
  *   2020      Evan Nemerson <evan@nemerson.com>
  *   2020      Christopher Moore <moore@free.fr>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #define SIMDE_TEST_X86_AVX512_INSN rcp
@@ -125,8 +126,116 @@ test_simde_mm512_rcp14_ps (SIMDE_MUNIT_TEST_ARGS) {
   return 1;
 #endif
 }
+
+static int
+test_simde_mm512_maskz_rcp14_ps (SIMDE_MUNIT_TEST_ARGS) {
+#if 1
+  static const struct {
+    const simde__mmask16 k;
+    const simde_float32 a[16];
+    const simde_float32 r[16];
+  } test_vec[] = {
+    { UINT16_C(43376),
+      { SIMDE_FLOAT32_C(    -0.83), SIMDE_FLOAT32_C(     0.39), SIMDE_FLOAT32_C(     0.88), SIMDE_FLOAT32_C(    -0.64),
+        SIMDE_FLOAT32_C(     0.88), SIMDE_FLOAT32_C(    -0.88), SIMDE_FLOAT32_C(     0.58), SIMDE_FLOAT32_C(    -0.50),
+        SIMDE_FLOAT32_C(    -0.05), SIMDE_FLOAT32_C(     0.16), SIMDE_FLOAT32_C(     0.77), SIMDE_FLOAT32_C(    -0.24),
+        SIMDE_FLOAT32_C(    -0.63), SIMDE_FLOAT32_C(    -0.08), SIMDE_FLOAT32_C(    -0.67), SIMDE_FLOAT32_C(     0.57) },
+      { SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(     1.14), SIMDE_FLOAT32_C(    -1.14), SIMDE_FLOAT32_C(     1.72), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(   -20.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -4.17),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(   -12.50), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     1.75) } },
+    { UINT16_C( 2404),
+      { SIMDE_FLOAT32_C(    -0.40), SIMDE_FLOAT32_C(    -0.69), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.12),
+        SIMDE_FLOAT32_C(    -0.63), SIMDE_FLOAT32_C(    -0.19), SIMDE_FLOAT32_C(    -0.47), SIMDE_FLOAT32_C(     0.65),
+        SIMDE_FLOAT32_C(     0.46), SIMDE_FLOAT32_C(     0.26), SIMDE_FLOAT32_C(    -0.14), SIMDE_FLOAT32_C(     0.86),
+        SIMDE_FLOAT32_C(     0.30), SIMDE_FLOAT32_C(     0.04), SIMDE_FLOAT32_C(     0.25), SIMDE_FLOAT32_C(     0.18) },
+      { SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00),      SIMDE_MATH_INFINITYF, SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -5.26), SIMDE_FLOAT32_C(    -2.13), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(     2.17), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     1.16),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00) } },
+    { UINT16_C(25369),
+      { SIMDE_FLOAT32_C(     0.30), SIMDE_FLOAT32_C(    -0.03), SIMDE_FLOAT32_C(     0.63), SIMDE_FLOAT32_C(    -0.75),
+        SIMDE_FLOAT32_C(    -0.87), SIMDE_FLOAT32_C(     0.39), SIMDE_FLOAT32_C(     0.01), SIMDE_FLOAT32_C(    -0.50),
+        SIMDE_FLOAT32_C(    -0.69), SIMDE_FLOAT32_C(     0.34), SIMDE_FLOAT32_C(    -0.92), SIMDE_FLOAT32_C(    -0.64),
+        SIMDE_FLOAT32_C(    -0.18), SIMDE_FLOAT32_C(    -0.32), SIMDE_FLOAT32_C(    -0.33), SIMDE_FLOAT32_C(     0.82) },
+      { SIMDE_FLOAT32_C(     3.33), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -1.33),
+        SIMDE_FLOAT32_C(    -1.15), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(    -1.45), SIMDE_FLOAT32_C(     2.94), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -3.12), SIMDE_FLOAT32_C(    -3.03), SIMDE_FLOAT32_C(     0.00) } },
+    { UINT16_C(35528),
+      { SIMDE_FLOAT32_C(    -0.37), SIMDE_FLOAT32_C(    -0.67), SIMDE_FLOAT32_C(    -0.31), SIMDE_FLOAT32_C(    -0.91),
+        SIMDE_FLOAT32_C(     0.59), SIMDE_FLOAT32_C(     0.55), SIMDE_FLOAT32_C(     0.94), SIMDE_FLOAT32_C(    -0.11),
+        SIMDE_FLOAT32_C(    -0.41), SIMDE_FLOAT32_C(     0.19), SIMDE_FLOAT32_C(    -0.93), SIMDE_FLOAT32_C(     0.98),
+        SIMDE_FLOAT32_C(    -0.69), SIMDE_FLOAT32_C(     0.37), SIMDE_FLOAT32_C(    -0.04), SIMDE_FLOAT32_C(     0.94) },
+      { SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -1.10),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     1.06), SIMDE_FLOAT32_C(    -9.09),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     5.26), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     1.02),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     1.06) } },
+    { UINT16_C(32330),
+      { SIMDE_FLOAT32_C(     0.33), SIMDE_FLOAT32_C(    -0.37), SIMDE_FLOAT32_C(     0.59), SIMDE_FLOAT32_C(     0.65),
+        SIMDE_FLOAT32_C(     0.97), SIMDE_FLOAT32_C(     0.67), SIMDE_FLOAT32_C(    -0.99), SIMDE_FLOAT32_C(    -0.21),
+        SIMDE_FLOAT32_C(    -0.65), SIMDE_FLOAT32_C(    -0.32), SIMDE_FLOAT32_C(    -0.40), SIMDE_FLOAT32_C(    -0.85),
+        SIMDE_FLOAT32_C(     0.72), SIMDE_FLOAT32_C(     0.24), SIMDE_FLOAT32_C(    -0.52), SIMDE_FLOAT32_C(    -0.58) },
+      { SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -2.70), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     1.54),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -1.01), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -3.12), SIMDE_FLOAT32_C(    -2.50), SIMDE_FLOAT32_C(    -1.18),
+        SIMDE_FLOAT32_C(     1.39), SIMDE_FLOAT32_C(     4.17), SIMDE_FLOAT32_C(    -1.92), SIMDE_FLOAT32_C(     0.00) } },
+    { UINT16_C( 3798),
+      { SIMDE_FLOAT32_C(     0.97), SIMDE_FLOAT32_C(     0.27), SIMDE_FLOAT32_C(    -0.05), SIMDE_FLOAT32_C(    -0.44),
+        SIMDE_FLOAT32_C(    -0.54), SIMDE_FLOAT32_C(     0.02), SIMDE_FLOAT32_C(    -0.46), SIMDE_FLOAT32_C(    -0.22),
+        SIMDE_FLOAT32_C(    -0.61), SIMDE_FLOAT32_C(     0.50), SIMDE_FLOAT32_C(    -0.28), SIMDE_FLOAT32_C(    -0.99),
+        SIMDE_FLOAT32_C(    -0.41), SIMDE_FLOAT32_C(    -0.95), SIMDE_FLOAT32_C(    -0.35), SIMDE_FLOAT32_C(    -0.82) },
+      { SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     3.70), SIMDE_FLOAT32_C(   -20.00), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(    -1.85), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -2.17), SIMDE_FLOAT32_C(    -4.55),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     2.00), SIMDE_FLOAT32_C(    -3.57), SIMDE_FLOAT32_C(    -1.01),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00) } },
+    { UINT16_C(30306),
+      { SIMDE_FLOAT32_C(     0.85), SIMDE_FLOAT32_C(     0.71), SIMDE_FLOAT32_C(     0.40), SIMDE_FLOAT32_C(    -0.80),
+        SIMDE_FLOAT32_C(    -0.61), SIMDE_FLOAT32_C(    -0.99), SIMDE_FLOAT32_C(    -0.66), SIMDE_FLOAT32_C(    -0.88),
+        SIMDE_FLOAT32_C(     0.24), SIMDE_FLOAT32_C(    -0.18), SIMDE_FLOAT32_C(    -0.47), SIMDE_FLOAT32_C(    -0.43),
+        SIMDE_FLOAT32_C(    -0.11), SIMDE_FLOAT32_C(    -0.50), SIMDE_FLOAT32_C(     0.84), SIMDE_FLOAT32_C(     0.84) },
+      { SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     1.41), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -1.01), SIMDE_FLOAT32_C(    -1.52), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(    -5.56), SIMDE_FLOAT32_C(    -2.13), SIMDE_FLOAT32_C(     0.00),
+        SIMDE_FLOAT32_C(    -9.09), SIMDE_FLOAT32_C(    -2.00), SIMDE_FLOAT32_C(     1.19), SIMDE_FLOAT32_C(     0.00) } },
+    { UINT16_C(65423),
+      { SIMDE_FLOAT32_C(    -0.14), SIMDE_FLOAT32_C(     0.60), SIMDE_FLOAT32_C(     0.08), SIMDE_FLOAT32_C(     0.26),
+        SIMDE_FLOAT32_C(     0.11), SIMDE_FLOAT32_C(     0.80), SIMDE_FLOAT32_C(     0.27), SIMDE_FLOAT32_C(     0.70),
+        SIMDE_FLOAT32_C(     0.85), SIMDE_FLOAT32_C(     0.92), SIMDE_FLOAT32_C(     0.88), SIMDE_FLOAT32_C(     0.54),
+        SIMDE_FLOAT32_C(    -0.47), SIMDE_FLOAT32_C(     0.73), SIMDE_FLOAT32_C(     0.25), SIMDE_FLOAT32_C(     0.93) },
+      { SIMDE_FLOAT32_C(    -7.14), SIMDE_FLOAT32_C(     1.67), SIMDE_FLOAT32_C(    12.50), SIMDE_FLOAT32_C(     3.85),
+        SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     0.00), SIMDE_FLOAT32_C(     1.43),
+        SIMDE_FLOAT32_C(     1.18), SIMDE_FLOAT32_C(     1.09), SIMDE_FLOAT32_C(     1.14), SIMDE_FLOAT32_C(     1.85),
+        SIMDE_FLOAT32_C(    -2.13), SIMDE_FLOAT32_C(     1.37), SIMDE_FLOAT32_C(     4.00), SIMDE_FLOAT32_C(     1.08) } },
+  };
+
+  for (size_t i = 0 ; i < (sizeof(test_vec) / sizeof(test_vec[0])) ; i++) {
+    simde__m512 a = simde_mm512_loadu_ps(test_vec[i].a);
+    simde__m512 r = simde_mm512_maskz_rcp14_ps(test_vec[i].k, a);
+    simde_test_x86_assert_equal_f32x16(r, simde_mm512_loadu_ps(test_vec[i].r), 1);
+  }
+
+  return 0;
+#else
+  fputc('\n', stdout);
+  for (int i = 0 ; i < 8 ; i++) {
+    simde__mmask16 k = simde_test_x86_random_mmask16();
+    simde__m512 a = simde_test_x86_random_f32x16(SIMDE_FLOAT32_C(-1.0), SIMDE_FLOAT32_C(1.0));
+    // TODO: generate smaller floating point numbers and test with greater accuracy
+    // as rcp14 is defined as "The maximum relative error for this approximation is less than 2^-14."
+    simde__m512 r = simde_mm512_maskz_rcp14_ps(k, a);
+
+    simde_test_x86_write_mmask16(2, k, SIMDE_TEST_VEC_POS_FIRST);
+    simde_test_x86_write_f32x16(2, a, SIMDE_TEST_VEC_POS_MIDDLE);
+    simde_test_x86_write_f32x16(2, r, SIMDE_TEST_VEC_POS_LAST);
+  }
+  return 1;
+#endif
+}
+
 SIMDE_TEST_FUNC_LIST_BEGIN
   SIMDE_TEST_FUNC_LIST_ENTRY(mm512_rcp14_ps)
+  SIMDE_TEST_FUNC_LIST_ENTRY(mm512_maskz_rcp14_ps)
 SIMDE_TEST_FUNC_LIST_END
 
 #include <test/x86/avx512/test-avx512-footer.h>

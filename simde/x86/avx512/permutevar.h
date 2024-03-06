@@ -21,57 +21,31 @@
  * SOFTWARE.
  *
  * Copyright:
- *   2023      Michael R. Crusoe <crusoe@debian.org>
  *   2024      Guation <guation@guation.cn>
  */
 
-#if !defined(SIMDE_X86_AVX512_RCP_H)
-#define SIMDE_X86_AVX512_RCP_H
+#if !defined(SIMDE_X86_AVX512_PERMUTEVAR_H)
+#define SIMDE_X86_AVX512_PERMUTEVAR_H
 
 #include "types.h"
+#include "permutexvar.h"
 
 HEDLEY_DIAGNOSTIC_PUSH
 SIMDE_DISABLE_UNWANTED_DIAGNOSTICS
 SIMDE_BEGIN_DECLS_
 
-// TODO: "The maximum relative error for this approximation is less than 2^-14."
-// vs 1.5*2^-12 for _mm{,256}_rcp_ps
-
-SIMDE_FUNCTION_ATTRIBUTES
-simde__m512
-simde_mm512_rcp14_ps (simde__m512 a) {
-  #if defined(SIMDE_X86_AVX512F_NATIVE)
-    return _mm512_rcp14_ps(a);
-  #else
-    simde__m512_private
-      r_,
-      a_ = simde__m512_to_private(a);
-
-    SIMDE_VECTORIZE
-    for (size_t i = 0 ; i < (sizeof(r_.f32) / sizeof(r_.f32[0])) ; i++) {
-      r_.f32[i] = SIMDE_FLOAT32_C(1.0) / a_.f32[i];
-    }
-
-    return simde__m512_from_private(r_);
-  #endif
-}
-#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
-  #undef _mm512_rcp14_ps
-  #define _mm512_rcp14_ps(a) simde_mm512_rcp14_ps(a)
-#endif
-
 #if defined(SIMDE_X86_AVX512F_NATIVE)
-  #define simde_mm512_maskz_rcp14_ps(k, a) _mm512_maskz_rcp14_ps(k, a)
+  #define simde_mm512_permutevar_epi32(idx, a) _mm512_permutevar_epi32((idx), (a))
 #else
-  #define simde_mm512_maskz_rcp14_ps(k, a) simde_mm512_maskz_mov_ps(k, simde_mm512_rcp14_ps(a))
+  #define simde_mm512_permutevar_epi32(idx, a) simde_mm512_permutexvar_epi32((idx), (a))
 #endif
 
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
-  #undef _mm512_maskz_rcp14_ps
-  #define _mm512_maskz_rcp14_ps(k, a) simde_mm512_maskz_rcp14_ps(k, a)
+  #undef _mm512_permutevar_epi32
+  #define _mm512_permutevar_epi32(idx, a) simde_mm512_permutevar_epi32((idx), (a))
 #endif
 
 SIMDE_END_DECLS_
 HEDLEY_DIAGNOSTIC_POP
 
-#endif /* !defined(SIMDE_X86_AVX512_RCP_H) */
+#endif /* !defined(SIMDE_X86_AVX512_PERMUTEVAR_H) */

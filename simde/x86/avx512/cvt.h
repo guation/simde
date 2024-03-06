@@ -25,6 +25,7 @@
  *   2020      Himanshi Mathur <himanshi18037@iiitd.ac.in>
  *   2020      Hidayat Khan <huk2209@gmail.com>
  *   2021      Andrew Rodriguez <anrodriguez@linkedin.com>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_CVT_H)
@@ -32,6 +33,7 @@
 
 #include "types.h"
 #include "mov.h"
+#include "round.h"
 #include "../../simde-f16.h"
 
 HEDLEY_DIAGNOSTIC_PUSH
@@ -136,6 +138,31 @@ simde_mm512_cvtepi16_epi32 (simde__m256i a) {
   #define _mm512_cvtepi16_epi32(a) simde_mm512_cvtepi16_epi32(a)
 #endif
 
+SIMDE_FUNCTION_ATTRIBUTES
+simde__m256i
+simde_mm512_cvtepi32_epi16 (simde__m512i a) {
+  #if defined(SIMDE_X86_AVX512F_NATIVE)
+    return _mm512_cvtepi32_epi16(a);
+  #else
+    simde__m256i_private r_;
+    simde__m512i_private a_ = simde__m512i_to_private(a);
+
+    #if defined(SIMDE_CONVERT_VECTOR_)
+      SIMDE_CONVERT_VECTOR_(r_.i16, a_.i32);
+    #else
+      SIMDE_VECTORIZE
+      for (size_t i = 0 ; i < (sizeof(r_.i16) / sizeof(r_.i16[0])) ; i++) {
+        r_.i16[i] = HEDLEY_STATIC_CAST(int16_t, a_.i32[i]);
+      }
+    #endif
+
+    return simde__m256i_from_private(r_);
+  #endif
+}
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_cvtepi32_epi16
+  #define _mm512_cvtepi32_epi16(a) simde_mm512_cvtepi32_epi16((a))
+#endif
 
 SIMDE_FUNCTION_ATTRIBUTES
 simde__m256i
@@ -394,6 +421,29 @@ simde_mm512_cvtps_epi32(simde__m512 a) {
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
   #undef _mm512_cvtps_epi32
   #define _mm512_cvtps_epi32(a) simde_mm512_cvtps_epi32(a)
+#endif
+
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #undef simde_mm512_cvtsi512_si32
+  #define simde_mm512_cvtsi512_si32(a) _mm512_cvtsi512_si32(a)
+#else
+  #undef simde_mm512_cvtsi512_si32
+  #define simde_mm512_cvtsi512_si32(a) (simde__m512i_to_private(a).i32[0])
+#endif
+
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_cvtsi512_si32
+  #define _mm512_cvtsi512_si32(a) simde_mm512_cvtsi512_si32(a)
+#endif
+
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #define simde_mm512_cvt_roundps_epi32(a, rounding) _mm512_cvt_roundps_epi32((a), (rounding))
+#else
+  #define simde_mm512_cvt_roundps_epi32(a, rounding) simde_mm512_cvtps_epi32(simde_x_mm512_round_ps((a), (rounding)))
+#endif
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_cvt_roundps_epi32
+  #define _mm512_cvt_roundps_epi32(a, rounding) _mm512_cvt_roundps_epi32((a), (rounding))
 #endif
 
 SIMDE_END_DECLS_

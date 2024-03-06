@@ -22,6 +22,7 @@
  *
  * Copyright:
  *   2023      Michael R. Crusoe <crusoe@debian.org>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_GATHER_H)
@@ -34,6 +35,61 @@
 HEDLEY_DIAGNOSTIC_PUSH
 SIMDE_DISABLE_UNWANTED_DIAGNOSTICS
 SIMDE_BEGIN_DECLS_
+
+SIMDE_FUNCTION_ATTRIBUTES
+simde__m512i
+simde_mm512_i32gather_epi32(simde__m512i vindex, const void* base_addr, const int32_t scale)
+    SIMDE_REQUIRE_CONSTANT(scale)
+    HEDLEY_REQUIRE_MSG((scale && scale <= 8 && !(scale & (scale - 1))), "`scale' must be a power of two less than or equal to 8") {
+  simde__m512i_private vindex_ = simde__m512i_to_private(vindex);
+  simde__m512i_private r_ = simde__m512i_to_private(simde_mm512_setzero_epi32());
+  const uint8_t* addr = HEDLEY_REINTERPRET_CAST(const uint8_t*, base_addr);
+
+  SIMDE_VECTORIZE
+  for (size_t i = 0 ; i < (sizeof(vindex_.i32) / sizeof(vindex_.i32[0])) ; i++) {
+    const uint8_t* src = addr + (HEDLEY_STATIC_CAST(size_t , vindex_.i32[i]) * HEDLEY_STATIC_CAST(size_t , scale));
+    int32_t dst;
+    simde_memcpy(&dst, src, sizeof(dst));
+    r_.i32[i] = dst;
+  }
+
+  return simde__m512i_from_private(r_);
+}
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #define simde_mm512_i32gather_epi32(vindex, base_addr, scale) _mm512_i32gather_epi32((vindex), (base_addr), (scale))
+#elif defined(SIMDE_X86_AVX2_NATIVE) && defined(SIMDE_STATEMENT_EXPR_)
+  #define simde_mm512_i32gather_epi32(vindex, base_addr, scale) SIMDE_STATEMENT_EXPR_(({\
+    simde__m512i_private simde_mm512_i32gather_epi32_r_; \
+    simde__m512i_private simde_mm512_i32gather_epi32_vindex_ = simde__m512i_to_private((vindex)); \
+    simde_mm512_i32gather_epi32_r_.m256i[0] = _mm256_i32gather_epi32( \
+      HEDLEY_STATIC_CAST(float const*, (base_addr)), simde_mm512_i32gather_epi32_vindex_.m256i[0], (scale)); \
+    simde_mm512_i32gather_epi32_r_.m256i[1] = _mm256_i32gather_epi32( \
+      HEDLEY_STATIC_CAST(float const*, (base_addr)), simde_mm512_i32gather_epi32_vindex_.m256i[1], (scale)); \
+    simde__m512i_from_private(simde_mm512_i32gather_epi32_r_); \
+  }))
+#elif defined(SIMDE_X86_AVX2_NATIVE) && !defined(SIMDE_STATEMENT_EXPR_)
+  #define simde_mm512_i32gather_epi32(vindex, base_addr, scale) \
+    simde_x_mm512_set_m256i( \
+      _mm256_i32gather_epi32(HEDLEY_STATIC_CAST(float const*, (base_addr)), \
+        simde_mm512_extracti32x8_epi32((vindex), 1), (scale)), \
+      _mm256_i32gather_epi32(HEDLEY_STATIC_CAST(float const*, (base_addr)), \
+        simde_mm512_extracti32x8_epi32((vindex), 0), (scale)) )
+#endif
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_i32gather_epi32
+  #define _mm512_i32gather_epi32(vindex, base_addr, scale) simde_mm512_i32gather_epi32((vindex), (base_addr), (scale))
+#endif
+
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #define simde_mm512_mask_i32gather_epi32(src, k, vindex, base_addr, scale) _mm512_mask_i32gather_epi32((src), (k), (vindex), (base_addr), (scale))
+#else
+  #define simde_mm512_mask_i32gather_epi32(src, k, vindex, base_addr, scale) simde_mm512_mask_mov_epi32((src), (k), simde_mm512_i32gather_epi32((vindex), (base_addr), (scale)))
+#endif
+
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_mask_i32gather_epi32
+  #define _mm512_mask_i32gather_epi32(src, k, vindex, base_addr, scale) simde_mm512_mask_i32gather_epi32((src), (k), (vindex), (base_addr), (scale))
+#endif
 
 SIMDE_FUNCTION_ATTRIBUTES
 simde__m512
@@ -77,6 +133,17 @@ simde_mm512_i32gather_ps(simde__m512i vindex, const void* base_addr, const int32
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
   #undef _mm512_i32gather_ps
   #define _mm512_i32gather_ps(vindex, base_addr, scale) simde_mm512_i32gather_ps((vindex), (base_addr), (scale))
+#endif
+
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #define simde_mm512_mask_i32gather_ps(src, k, vindex, base_addr, scale) _mm512_mask_i32gather_ps((src), (k), (vindex), (base_addr), (scale))
+#else
+  #define simde_mm512_mask_i32gather_ps(src, k, vindex, base_addr, scale) simde_mm512_mask_mov_ps((src), (k), simde_mm512_i32gather_ps((vindex), (base_addr), (scale)))
+#endif
+
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_mask_i32gather_ps
+  #define _mm512_mask_i32gather_ps(src, k, vindex, base_addr, scale) simde_mm512_mask_i32gather_ps((src), (k), (vindex), (base_addr), (scale))
 #endif
 
 SIMDE_FUNCTION_ATTRIBUTES

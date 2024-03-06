@@ -22,6 +22,7 @@
  *
  * Copyright:
  *   2023      Michael R. Crusoe <crusoe@debian.org>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #define SIMDE_TEST_X86_AVX512_INSN permutex
@@ -238,12 +239,94 @@ test_simde_mm512_mask_permutex_epi64(SIMDE_MUNIT_TEST_ARGS) {
   return 1;
 #endif
 }
+
+static int
+test_simde_mm512_maskz_permutex_epi64(SIMDE_MUNIT_TEST_ARGS) {
+#if 1
+  const struct {
+    simde__mmask8 k;
+    int64_t a[8];
+    int64_t r[8];
+  } test_vec[8] = {
+    { UINT8_C( 17),
+      {  INT64_C( 5913228200155220703), -INT64_C( 4078387247709845604), -INT64_C( 4597370040367914464), -INT64_C( 6974060691811524020),
+        -INT64_C( 1712325202676200653), -INT64_C( 3868492391405911519),  INT64_C( 5785540044901853244),  INT64_C( 3882320591785548417) },
+      {  INT64_C( 5913228200155220703),  INT64_C(                   0),  INT64_C(                   0),  INT64_C(                   0),
+        -INT64_C( 1712325202676200653),  INT64_C(                   0),  INT64_C(                   0),  INT64_C(                   0) } },
+    { UINT8_C(  0),
+      {  INT64_C( 6783624299734179690),  INT64_C( 2724628286117817657),  INT64_C( 9141597664971479550),  INT64_C( 7629580453573303817),
+        -INT64_C( 4715390283587764267),  INT64_C( 7449271994514839358),  INT64_C( 1125232529587342203), -INT64_C( 6257538567029973568) },
+      {  INT64_C(                   0),  INT64_C(                   0),  INT64_C(                   0),  INT64_C(                   0),
+         INT64_C(                   0),  INT64_C(                   0),  INT64_C(                   0),  INT64_C(                   0) } },
+    { UINT8_C( 49),
+      {  INT64_C(  100279214884117140), -INT64_C( 8272318660712095595),  INT64_C(  862618472676544918),  INT64_C( 8305632630299146114),
+        -INT64_C( 6787209361281660830), -INT64_C( 6761158633060812387), -INT64_C( 2029766214597034277), -INT64_C( 6999885491945950327) },
+      {  INT64_C(  862618472676544918),  INT64_C(                   0),  INT64_C(                   0),  INT64_C(                   0),
+        -INT64_C( 2029766214597034277), -INT64_C( 6787209361281660830),  INT64_C(                   0),  INT64_C(                   0) } },
+    { UINT8_C( 89),
+      {  INT64_C( 8146692010447497844), -INT64_C( 7522665211782910667), -INT64_C( 1489324539766086663),  INT64_C(  908537003957009409),
+        -INT64_C( 1524032288118155473),  INT64_C( 7973698409857701433),  INT64_C( 8992436644157694120), -INT64_C( 1734587654698765751) },
+      {  INT64_C(  908537003957009409),  INT64_C(                   0),  INT64_C(                   0),  INT64_C( 8146692010447497844),
+        -INT64_C( 1734587654698765751),  INT64_C(                   0), -INT64_C( 1524032288118155473),  INT64_C(                   0) } },
+    { UINT8_C(244),
+      {  INT64_C( 9164816621532761962), -INT64_C( 8462435318535798366),  INT64_C( 3275104540353195932), -INT64_C( 6033755591772187544),
+        -INT64_C( 1386314523167534822), -INT64_C( 5294436448172001773),  INT64_C( 8518650014965206225),  INT64_C(  258292774386802088) },
+      {  INT64_C(                   0),  INT64_C(                   0),  INT64_C( 9164816621532761962),  INT64_C(                   0),
+        -INT64_C( 1386314523167534822), -INT64_C( 1386314523167534822), -INT64_C( 1386314523167534822), -INT64_C( 1386314523167534822) } },
+    { UINT8_C(109),
+      { -INT64_C( 4747592218158676424),  INT64_C( 3184201756004850173), -INT64_C( 7968644050150868114),  INT64_C( 2353549619179901713),
+         INT64_C( 1047446530072176578),  INT64_C( 6714196269325967713),  INT64_C( 2944659365012858840), -INT64_C( 7573780429248047141) },
+      {  INT64_C( 3184201756004850173),  INT64_C(                   0), -INT64_C( 4747592218158676424), -INT64_C( 4747592218158676424),
+         INT64_C(                   0),  INT64_C( 1047446530072176578),  INT64_C( 1047446530072176578),  INT64_C(                   0) } },
+    { UINT8_C( 65),
+      {  INT64_C( 5383926813351108622),  INT64_C( 5507505307132737785), -INT64_C( 1218069113710855243), -INT64_C( 3576885323142800535),
+         INT64_C( 6912422236953828025),  INT64_C( 8269844481188374419),  INT64_C( 2064557053890733854),  INT64_C( 8948766544151407011) },
+      { -INT64_C( 1218069113710855243),  INT64_C(                   0),  INT64_C(                   0),  INT64_C(                   0),
+         INT64_C(                   0),  INT64_C(                   0),  INT64_C( 6912422236953828025),  INT64_C(                   0) } },
+    { UINT8_C(236),
+      {  INT64_C( 3729550090825047892),  INT64_C( 2773482889712581371),  INT64_C( 4935372190797870099),  INT64_C( 7325811850376372225),
+         INT64_C( 6116547282320249506),  INT64_C( 5311485821444150161), -INT64_C( 8681636587984613531), -INT64_C( 5694913816401245311) },
+      {  INT64_C(                   0),  INT64_C(                   0),  INT64_C( 3729550090825047892),  INT64_C( 3729550090825047892),
+         INT64_C(                   0),  INT64_C( 6116547282320249506),  INT64_C( 6116547282320249506),  INT64_C( 6116547282320249506) } },
+  };
+
+  for (size_t i = 0 ; i < (sizeof(test_vec) / sizeof(test_vec[0])); i++) {
+    simde__m512i r,
+      a = simde_mm512_loadu_epi64(test_vec[i].a);
+    switch(i & 3) {
+      case 0: r = simde_mm512_maskz_permutex_epi64(test_vec[i].k, a, 0); break;
+      case 1: r = simde_mm512_maskz_permutex_epi64(test_vec[i].k, a, 1); break;
+      case 2: r = simde_mm512_maskz_permutex_epi64(test_vec[i].k, a, 2); break;
+      case 3: r = simde_mm512_maskz_permutex_epi64(test_vec[i].k, a, 3); break;
+      default: HEDLEY_UNREACHABLE(); r = simde_mm512_setzero_si512(); break;
+    }
+    simde_test_x86_assert_equal_i64x8(r, simde_mm512_loadu_epi64(test_vec[i].r));
+  }
+
+  return 0;
+#else
+  fputc('\n', stdout);
+  for (int i = 0 ; i < 8 ; i++) {
+    simde__m512i r,
+      a = simde_test_x86_random_i64x8();
+    simde__mmask8 k = simde_test_x86_random_mmask8();
+    SIMDE_CONSTIFY_4_(simde_mm512_maskz_permutex_epi64, r, (HEDLEY_UNREACHABLE(), a), i & 3, k, a);
+
+    simde_test_x86_write_mmask8(2, k, SIMDE_TEST_VEC_POS_FIRST);
+    simde_test_x86_write_i64x8(2, a, SIMDE_TEST_VEC_POS_MIDDLE);
+    simde_test_x86_write_i64x8(2, r, SIMDE_TEST_VEC_POS_LAST);
+  }
+  return 1;
+#endif
+}
+
 HEDLEY_DIAGNOSTIC_POP //_DISABLE_UNREACHABLE_
 
 SIMDE_TEST_FUNC_LIST_BEGIN
   SIMDE_TEST_FUNC_LIST_ENTRY(mm256_permutex_epi64)
   SIMDE_TEST_FUNC_LIST_ENTRY(mm512_permutex_epi64)
   SIMDE_TEST_FUNC_LIST_ENTRY(mm512_mask_permutex_epi64)
+  SIMDE_TEST_FUNC_LIST_ENTRY(mm512_maskz_permutex_epi64)
 SIMDE_TEST_FUNC_LIST_END
 
 #include <test/x86/avx512/test-avx512-footer.h>

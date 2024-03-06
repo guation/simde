@@ -23,6 +23,7 @@
  * Copyright:
  *   2020      Evan Nemerson <evan@nemerson.com>
  *   2020      Hidayat Khan <huk2209@gmail.com>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_SRLV_H)
@@ -210,6 +211,16 @@ simde_mm512_srlv_epi16 (simde__m512i a, simde__m512i b) {
 #if defined(SIMDE_X86_AVX512BW_ENABLE_NATIVE_ALIASES)
   #undef _mm512_srlv_epi16
   #define _mm512_srlv_epi16(a, b) simde_mm512_srlv_epi16(a, b)
+#endif
+
+#if defined(SIMDE_X86_AVX512BW_NATIVE)
+  #define simde_mm512_mask_srlv_epi16(src, k, a, b) _mm512_mask_srlv_epi16((src), (k), (a), (b))
+#else
+  #define simde_mm512_mask_srlv_epi16(src, k, a, b) simde_mm512_mask_mov_epi16((src), (k), simde_mm512_srlv_epi16((a), (b)))
+#endif
+#if defined(SIMDE_X86_AVX512BW_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_mask_srlv_epi16
+  #define _mm512_mask_srlv_epi16(src, k, a, b) _mm512_mask_srlv_epi16((src), (k), (a), (b))
 #endif
 
 SIMDE_FUNCTION_ATTRIBUTES

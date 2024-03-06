@@ -22,6 +22,7 @@
  *
  * Copyright:
  *   2023      Michael R. Crusoe <crusoe@debian.org>
+ *   2024      Guation <guation@guation.cn>
  */
 
 #if !defined(SIMDE_X86_AVX512_PERMUTEX_H)
@@ -93,6 +94,16 @@ simde_mm512_permutex_epi64 (simde__m512i a, const int imm8) {
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
   #undef _mm512_mask_permutex_epi64
   #define _mm512_mask_permutex_epi64(src, k, a, imm8) simde_mm512_mask_permutex_epi64((src), (k), (a), (imm8))
+#endif
+
+#if defined(SIMDE_X86_AVX512F_NATIVE)
+  #define simde_mm512_maskz_permutex_epi64(k, a, imm8) _mm512_maskz_permutex_epi64((k), (a), (imm8))
+#else
+  #define simde_mm512_maskz_permutex_epi64(k, a, imm8) simde_mm512_maskz_mov_epi64((k), simde_mm512_permutex_epi64((a), (imm8)))
+#endif
+#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
+  #undef _mm512_maskz_permutex_epi64
+  #define _mm512_maskz_permutex_epi64(k, a, imm8) simde_mm512_maskz_permutex_epi64((k), (a), (imm8))
 #endif
 
 SIMDE_END_DECLS_

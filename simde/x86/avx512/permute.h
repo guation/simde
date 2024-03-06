@@ -21,12 +21,11 @@
  * SOFTWARE.
  *
  * Copyright:
- *   2023      Michael R. Crusoe <crusoe@debian.org>
  *   2024      Guation <guation@guation.cn>
  */
 
-#if !defined(SIMDE_X86_AVX512_RCP_H)
-#define SIMDE_X86_AVX512_RCP_H
+#if !defined(SIMDE_X86_AVX512_PERMUTE_H)
+#define SIMDE_X86_AVX512_PERMUTE_H
 
 #include "types.h"
 
@@ -34,44 +33,31 @@ HEDLEY_DIAGNOSTIC_PUSH
 SIMDE_DISABLE_UNWANTED_DIAGNOSTICS
 SIMDE_BEGIN_DECLS_
 
-// TODO: "The maximum relative error for this approximation is less than 2^-14."
-// vs 1.5*2^-12 for _mm{,256}_rcp_ps
-
 SIMDE_FUNCTION_ATTRIBUTES
 simde__m512
-simde_mm512_rcp14_ps (simde__m512 a) {
-  #if defined(SIMDE_X86_AVX512F_NATIVE)
-    return _mm512_rcp14_ps(a);
-  #else
-    simde__m512_private
-      r_,
-      a_ = simde__m512_to_private(a);
+simde_mm512_permute_ps (simde__m512 a, const int imm8)
+    SIMDE_REQUIRE_CONSTANT_RANGE(imm8, 0, 255) {
+  simde__m512_private a_ = simde__m512_to_private(a);
+  simde__m512_private r_;
 
-    SIMDE_VECTORIZE
-    for (size_t i = 0 ; i < (sizeof(r_.f32) / sizeof(r_.f32[0])) ; i++) {
-      r_.f32[i] = SIMDE_FLOAT32_C(1.0) / a_.f32[i];
-    }
+  SIMDE_VECTORIZE
+  for (size_t i = 0 ; i < (sizeof(r_.i32) / sizeof(r_.i32[0])) ; i++) {
+    r_.i32[i] = a_.m128_private[i >> 2].i32[imm8 >> (i << 1 & 7) & 3];
+  }
 
-    return simde__m512_from_private(r_);
-  #endif
+  return simde__m512_from_private(r_);
 }
-#if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
-  #undef _mm512_rcp14_ps
-  #define _mm512_rcp14_ps(a) simde_mm512_rcp14_ps(a)
-#endif
 
 #if defined(SIMDE_X86_AVX512F_NATIVE)
-  #define simde_mm512_maskz_rcp14_ps(k, a) _mm512_maskz_rcp14_ps(k, a)
-#else
-  #define simde_mm512_maskz_rcp14_ps(k, a) simde_mm512_maskz_mov_ps(k, simde_mm512_rcp14_ps(a))
+  #define simde_mm512_permute_ps(a, imm8) _mm512_permute_ps((a), (imm8))
 #endif
 
 #if defined(SIMDE_X86_AVX512F_ENABLE_NATIVE_ALIASES)
-  #undef _mm512_maskz_rcp14_ps
-  #define _mm512_maskz_rcp14_ps(k, a) simde_mm512_maskz_rcp14_ps(k, a)
+  #undef _mm512_permute_ps
+  #define _mm512_permute_ps(a, imm8) simde_mm512_permute_ps((a), (imm8))
 #endif
 
 SIMDE_END_DECLS_
 HEDLEY_DIAGNOSTIC_POP
 
-#endif /* !defined(SIMDE_X86_AVX512_RCP_H) */
+#endif /* !defined(SIMDE_X86_AVX512_PERMUTE_H) */
